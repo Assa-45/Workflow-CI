@@ -1,4 +1,5 @@
 import mlflow
+import os
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -10,7 +11,8 @@ from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, log_loss, roc_auc_score
 
-mlflow.set_tracking_uri("http://127.0.0.1:5002")
+tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5002")
+mlflow.set_tracking_uri(tracking_uri)
 mlflow.set_experiment("student-performance-prediction")
 
 csv_path = "data/python-learning-performance_preprocessing.csv"
@@ -22,12 +24,22 @@ y = data['passed_exam']
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, 
     test_size=0.2, 
-    stratify=y
+    stratify=y,
+    random_state=42 
 )
-input_example = X_train.iloc[:5]
-model = LogisticRegression(dual=True, max_iter=10000, penalty='l2', solver='liblinear')
 
-with mlflow.start_run():
+input_example = X_train.iloc[:5]
+model = LogisticRegression(
+    dual=True, 
+    max_iter=10000, 
+    penalty='l2', 
+    solver='liblinear',
+    random_state=42 
+)
+
+with mlflow.start_run() as run:
+    print(f"MLflow Run ID: {run.info.run_id}")  # Debug info
+    
     model.fit(X_train, y_train)
 
     # prediksi data latih
@@ -69,3 +81,4 @@ with mlflow.start_run():
     mlflow.log_artifact("metrics_info.json")
     mlflow.log_artifact("training_confusion_matrix.png")
     mlflow.sklearn.log_model(model, artifact_path="model", input_example=input_example)
+    
