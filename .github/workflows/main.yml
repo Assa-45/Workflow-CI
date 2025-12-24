@@ -36,7 +36,7 @@ jobs:
 
       - name: Run MLflow project
         run: |
-          mlflow run MLproject
+          mlflow run $GITHUB_WORKSPACE/MLproject
 
       - name: Get latest MLflow run_id
         run: |
