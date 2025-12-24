@@ -2,7 +2,7 @@ name: Workflow-CI Push Github & Docker
 
 on:
   push:
-    branches: 
+    branches:
       - main
     paths:
       - 'MLProject/data/python-learning-performance_preprocessing.csv'
@@ -10,6 +10,7 @@ on:
 jobs:
   mlflow-workflow:
     runs-on: ubuntu-latest
+
     steps:
       - name: Run actions/checkout@v3
         uses: actions/checkout@v3
@@ -23,25 +24,28 @@ jobs:
 
       - name: Install dependencies
         run: |
+          pip install --upgrade pip
           pip install -r MLProject/requirements.txt
 
-      - name: Run mlflow project
+      - name: Run MLflow project
         run: |
-          mlflow run . --experiment-name "Testing"
+          mlflow run MLProject --experiment-name "Testing"
 
       - name: Get latest MLflow run_id
         id: get_id
         run: |
-          # Mengambil run_id terbaru untuk digunakan di step build-docker
-          RUN_ID=$(mlflow runs list --experiment-name "Testing" | awk 'NR==3 {print $1}')
+          RUN_ID=$(mlflow runs list --experiment-name "Testing" --order-by=start_time --max-results 1 --output json | jq -r '.[0].run_id')
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+
+      - name: Copy MLflow Artifacts
+        run: |
+          mkdir -p model_artifacts
+          cp -r MLProject/mlruns/0/${{ env.RUN_ID }}/artifacts/model model_artifacts/
 
       - name: Upload Artifact to GitHub Repo
         run: |
-          # Konfigurasi git agar bisa push balik
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
           git add model_artifacts/
           git commit -m "chore: upload mlflow artifacts for run ${{ env.RUN_ID }}" || echo "No changes to commit"
           git push
