@@ -1,7 +1,9 @@
 name: student-performance-prediction
-
 conda_env: conda.yaml
- 
+
+experiment:
+  name: student-performance-prediction
+
 entry_points:
   main:
     parameters:
@@ -11,3 +13,4 @@ entry_points:
       dataset: {type: string, default: "data/python-learning-performance_preprocessing.csv"}
 
     command: "python modelling.py --class_weight {class_weight} --dual {dual} --max_iter {max_iter} --dataset {dataset}"
+
