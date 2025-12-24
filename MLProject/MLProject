@@ -1,0 +1,12 @@
+name: student-performance-prediction
+
+conda_env: conda.yaml
+ 
+entry_points:
+  main:
+    parameters:
+      class_weight: {type: string, default: 'balanced'}
+      dual: {type: boolean, default: False}
+      max_iter: {type: int, default: 1000}
+      dataset: {type: string, default: "data/python-learning-performance_preprocessing.csv"}
+    command: "python modelling.py {class_weight} {dual} {max_iter} {dataset}"
