@@ -24,14 +24,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m venv venv
-          source venv/bin/activate
           pip install -r MLProject/requirements.txt
 
       - name: Run MLflow project
         run: |
-          source venv/bin/activate
-          mlflow run MLProject --experiment-name "Testing"
+          conda env create -f MLProject/conda.yaml -n mlflow_env
+          conda run -n mlflow_env mlflow run MLProject --experiment-name "Testing"
 
       - name: Get latest MLflow run_id
         id: get_id
