@@ -45,38 +45,46 @@ jobs:
 
       - name: Set MLflow Tracking URI
         run: |
-          echo "MLFLOW_TRACKING_URI=file:${GITHUB_WORKSPACE}/mlruns" >> $GITHUB_ENV
-
+          echo "MLFLOW_TRACKING_URI=file:${GITHUB_WORKSPACE}/MLProject/mlruns" >> $GITHUB_ENV
+      
       - name: Run MLflow project
         run: |
           cd MLProject
-          mlflow run . --no-conda
-
+          mlflow run . --env-manager=local
+      
       - name: Get latest MLflow run_id
         run: |
-          RUN_ID=$(ls -td mlruns/*/*/ | head -n 1 | cut -d'/' -f3)
+          cd MLProject
+          # Cari experiment ID dulu
+          EXP_ID=$(ls -t mlruns | grep -E '^[0-9]+$' | head -n 1)
+          echo "Experiment ID: $EXP_ID"
+          
+          # Ambil run_id terbaru dari experiment tersebut
+          RUN_ID=$(ls -t mlruns/$EXP_ID | grep -E '^[a-f0-9]{32}$' | head -n 1)
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          echo "EXP_ID=$EXP_ID" >> $GITHUB_ENV
           echo "Latest run_id: $RUN_ID"
-
+      
       - name: Copy MLflow Artifacts
         run: |
-          mkdir -p model_artifacts
-          EXP_ID=$(ls mlruns | head -n 1)
-          cp -r mlruns/$EXP_ID/${{ env.RUN_ID }}/artifacts/model model_artifacts/
-
+          cd MLProject
+          mkdir -p ../model_artifacts
+          cp -r mlruns/${{ env.EXP_ID }}/${{ env.RUN_ID }}/artifacts/model ../model_artifacts/
+      
       - name: Upload Artifact to GitHub Repo
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-      
+          
           git add model_artifacts/
           git commit -m "chore: upload mlflow artifacts for run ${{ env.RUN_ID }}" || echo "No changes to commit"
           git push origin main
-
+      
       - name: Build Docker Model
         run: |
+          cd MLProject
           mlflow models build-docker \
-            -m "runs:/${{ env.RUN_ID }}/model" \
+            -m "mlruns/${{ env.EXP_ID }}/${{ env.RUN_ID }}/artifacts/model" \
             -n "${{ secrets.DOCKERHUB_USERNAME }}/student-performance-prediction:latest"
 
       - name: Log in to Docker Hub
@@ -87,8 +95,8 @@ jobs:
 
       - name: Tag Docker Image
         run: |
-          docker tag cc ${{ secrets.DOCKER_HUB_USERNAME }}/student-performance-prediction:latest
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/student-performance-prediction:latest ${{ secrets.DOCKERHUB_USERNAME }}/student-performance-prediction:latest
 
       - name: Push Docker Image
         run: |
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/student-performance-prediction:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/student-performance-prediction:latest
