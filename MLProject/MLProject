@@ -9,4 +9,5 @@ entry_points:
       dual: {type: boolean, default: False}
       max_iter: {type: int, default: 1000}
       dataset: {type: string, default: "data/python-learning-performance_preprocessing.csv"}
-    command: "python modelling.py {class_weight} {dual} {max_iter} {dataset}"
+
+    command: "python modelling.py --class_weight {class_weight} --dual {dual} --max_iter {max_iter} --dataset {dataset}"
