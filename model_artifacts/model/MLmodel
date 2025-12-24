@@ -1,0 +1,48 @@
+artifact_path: model
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.12.7
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.7.2
+mlflow_version: 2.18.0
+model_size_bytes: 6255
+model_uuid: 09b2edfe66ac4aa890dec5fa095fc585
+run_id: c8ba7c39ff1149ae819f99d0b377515d
+saved_input_example_info:
+  artifact_path: input_example.json
+  pandas_orient: split
+  serving_input_path: serving_input_example.json
+  type: dataframe
+signature:
+  inputs: '[{"type": "double", "name": "age", "required": true}, {"type": "double",
+    "name": "weeks_in_course", "required": true}, {"type": "double", "name": "hours_spent_learning_per_week",
+    "required": true}, {"type": "double", "name": "practice_problems_solved", "required":
+    true}, {"type": "double", "name": "projects_completed", "required": true}, {"type":
+    "double", "name": "tutorial_videos_watched", "required": true}, {"type": "double",
+    "name": "uses_kaggle", "required": true}, {"type": "double", "name": "participates_in_discussion_forums",
+    "required": true}, {"type": "double", "name": "debugging_sessions_per_week", "required":
+    true}, {"type": "double", "name": "self_reported_confidence_python", "required":
+    true}, {"type": "double", "name": "final_exam_score", "required": true}, {"type":
+    "boolean", "name": "country_Bangladesh", "required": true}, {"type": "boolean",
+    "name": "country_Brazil", "required": true}, {"type": "boolean", "name": "country_Germany",
+    "required": true}, {"type": "boolean", "name": "country_India", "required": true},
+    {"type": "boolean", "name": "country_Indonesia", "required": true}, {"type": "boolean",
+    "name": "country_Nigeria", "required": true}, {"type": "boolean", "name": "country_Other",
+    "required": true}, {"type": "boolean", "name": "country_Pakistan", "required":
+    true}, {"type": "boolean", "name": "country_UK", "required": true}, {"type": "boolean",
+    "name": "country_USA", "required": true}, {"type": "boolean", "name": "prior_programming_experience_Advanced",
+    "required": true}, {"type": "boolean", "name": "prior_programming_experience_Beginner",
+    "required": true}, {"type": "boolean", "name": "prior_programming_experience_Intermediate",
+    "required": true}]'
+  outputs: '[{"type": "long", "required": true}]'
+  params: null
+utc_time_created: '2025-12-24 13:12:59.219388'
