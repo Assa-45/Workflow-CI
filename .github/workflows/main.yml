@@ -34,13 +34,23 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r MLProject/requirements.txt
 
+      - name: Debug - Check structure
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "MLProject contents:"
+          ls -la MLProject/
+          echo "MLProject file:"
+          cat MLProject/MLProject
+
       - name: Set MLflow Tracking URI
         run: |
           echo "MLFLOW_TRACKING_URI=file:${GITHUB_WORKSPACE}/mlruns" >> $GITHUB_ENV
 
       - name: Run MLflow project
         run: |
-          mlflow run ./MLProject
+          cd MLProject
+          mlflow run . --no-conda
 
       - name: Get latest MLflow run_id
         run: |
