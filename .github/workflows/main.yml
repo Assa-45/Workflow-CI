@@ -1,5 +1,8 @@
 name: Workflow-CI Push Github & Docker
 
+permissions:
+  contents: write
+
 on:
   push:
     branches:
@@ -33,26 +36,28 @@ jobs:
 
       - name: Run MLflow project
         run: |
-          mlflow run MLproject/MLproject --env-manager=local 
+          mlflow run MLproject
 
       - name: Get latest MLflow run_id
-        id: get_id
         run: |
-          RUN_ID=$(mlflow runs list --experiment-name "Testing" --order-by=start_time --max-results 1 --output json | jq -r '.[0].run_id')
+          RUN_ID=$(ls -td mlruns/*/*/ | head -n 1 | cut -d'/' -f3)
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          echo "Latest run_id: $RUN_ID"
 
       - name: Copy MLflow Artifacts
         run: |
           mkdir -p model_artifacts
-          cp -r MLProject/mlruns/0/${{ env.RUN_ID }}/artifacts/model model_artifacts/
+          EXP_ID=$(ls mlruns | head -n 1)
+          cp -r mlruns/$EXP_ID/${{ env.RUN_ID }}/artifacts/model model_artifacts/
 
       - name: Upload Artifact to GitHub Repo
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
+      
           git add model_artifacts/
           git commit -m "chore: upload mlflow artifacts for run ${{ env.RUN_ID }}" || echo "No changes to commit"
-          git push
+          git push origin main
 
       - name: Build Docker Model
         run: |
