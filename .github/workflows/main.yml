@@ -1,0 +1,63 @@
+name: Workflow-CI Push Github & Docker
+
+on:
+  push:
+    branches: 
+      - main
+    paths:
+      - 'MLProject/data/python-learning-performance_preprocessing.csv'
+
+jobs:
+  mlflow-workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run actions/checkout@v3
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.12.7
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.7'
+
+      - name: Install dependencies
+        run: |
+          pip install -r MLProject/requirements.txt
+
+      - name: Run mlflow project
+        run: |
+          mlflow run . --experiment-name "Testing"
+
+      - name: Get latest MLflow run_id
+        id: get_id
+        run: |
+          # Mengambil run_id terbaru untuk digunakan di step build-docker
+          RUN_ID=$(mlflow runs list --experiment-name "Testing" | awk 'NR==3 {print $1}')
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+
+      - name: Upload Artifact to GitHub Repo
+        run: |
+          # Konfigurasi git agar bisa push balik
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add model_artifacts/
+          git commit -m "chore: upload mlflow artifacts for run ${{ env.RUN_ID }}" || echo "No changes to commit"
+          git push
+
+      - name: Build Docker Model
+        run: |
+          mlflow models build-docker \
+            -m "runs:/${{ env.RUN_ID }}/model" \
+            -n "${{ secrets.DOCKERHUB_USERNAME }}/student-performance-prediction:latest"
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Tag and Push Docker Image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/student-performance-prediction:latest
