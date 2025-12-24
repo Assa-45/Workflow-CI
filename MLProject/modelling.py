@@ -16,7 +16,6 @@ def train_model(class_weight='balanced', dual=False, max_iter=10000, dataset="da
     # Setup MLflow
     tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5002")
     mlflow.set_tracking_uri(tracking_uri)
-    mlflow.set_experiment("student-performance-prediction")
 
     # Load data
     data = pd.read_csv(dataset)
@@ -108,3 +107,4 @@ if __name__ == "__main__":
         max_iter=args.max_iter,
         dataset=args.dataset
     )
+
